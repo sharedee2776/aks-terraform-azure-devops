@@ -1,4 +1,5 @@
 provider "azurerm" {
   features {}
-  subscription_id = "76bafeed-2a04-4ac2-b601-da3a63949825"
+  use_oidc = true
+  # Subscription ID will be provided by Azure login in GitHub Actions
 }
