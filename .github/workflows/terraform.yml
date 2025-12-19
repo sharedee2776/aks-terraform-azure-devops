@@ -1,11 +1,11 @@
 name: Terraform AKS
 
 on:
-  push:
+  push: 
     branches: ["main"]
 
 permissions:
-  id-token: write
+  id-token:  write
   contents:  read
 
 jobs:
@@ -15,47 +15,43 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: azure/login@v2
-        with:
-          client-id: ${{ secrets. AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets. AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        with: 
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id:  ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - uses: hashicorp/setup-terraform@v3
 
-      - run: terraform init
-        working-directory: terraform/envs/dev
-        env:
-          ARM_CLIENT_ID: ${{ secrets. AZURE_CLIENT_ID }}
-          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          ARM_SUBSCRIPTION_ID: ${{ secrets. AZURE_SUBSCRIPTION_ID }}
-          ARM_USE_OIDC: true
-
-      - name: Import existing resources
+      - run:  terraform init
         working-directory:  terraform/envs/dev
         env:
           ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets. AZURE_SUBSCRIPTION_ID }}
+          ARM_USE_OIDC: true
+
+      - name:  Import subnet
+        working-directory:  terraform/envs/dev
+        continue-on-error: true
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           ARM_USE_OIDC: true
-        run:  |
-          terraform import azurerm_resource_group.this /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/rg-aks-dev || true
-          terraform import module.acr.azurerm_container_registry.this /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/rg-aks-dev/providers/Microsoft.ContainerRegistry/registries/devaksacr2025 || true
-          terraform import module.network.azurerm_virtual_network.this /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/rg-aks-dev/providers/Microsoft.Network/virtualNetworks/dev-vnet || true
-          terraform import module. network.azurerm_subnet. aks /subscriptions/${{ secrets. AZURE_SUBSCRIPTION_ID }}/resourceGroups/rg-aks-dev/providers/Microsoft.Network/virtualNetworks/dev-vnet/subnets/aks-subnet || true
-          terraform import module.aks.azurerm_kubernetes_cluster.this /subscriptions/${{ secrets. AZURE_SUBSCRIPTION_ID }}/resourceGroups/rg-aks-dev/providers/Microsoft. ContainerService/managedClusters/dev-aks || true
+        run: terraform import module.network.azurerm_subnet.aks /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/rg-aks-dev/providers/Microsoft.Network/virtualNetworks/dev-vnet/subnets/aks-subnet
 
       - run: terraform plan
         working-directory: terraform/envs/dev
         env: 
-          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          ARM_TENANT_ID:  ${{ secrets.AZURE_TENANT_ID }}
+          ARM_CLIENT_ID:  ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets. AZURE_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          ARM_USE_OIDC: true
+          ARM_USE_OIDC:  true
 
       - run: terraform apply -auto-approve
         working-directory: terraform/envs/dev
-        env: 
-          ARM_CLIENT_ID:  ${{ secrets.AZURE_CLIENT_ID }}
+        env:
+          ARM_CLIENT_ID: ${{ secrets. AZURE_CLIENT_ID }}
           ARM_TENANT_ID:  ${{ secrets.AZURE_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           ARM_USE_OIDC: true
