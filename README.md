@@ -1,47 +1,43 @@
-# Production-Grade AKS Deployment with Terraform & GitHub Actions
+# 🚀 Production-Grade Azure AKS Deployment with Terraform & GitHub Actions
 
-This repository demonstrates a **production-ready Azure Kubernetes Service (AKS) deployment** using **Terraform modules**, **remote state management**, and **GitHub Actions CI/CD pipeline**. It is designed for portfolio use, demonstrating DevOps, cloud, and Kubernetes best practices.
+This project demonstrates a **full DevOps pipeline** for deploying and managing Azure Kubernetes Service (AKS) infrastructure using **modular Terraform** and **GitHub Actions**. A sample Nginx application is deployed to AKS and made available via a public LoadBalancer IP.
 
 ---
 
 ## Table of Contents
 
-* [Project Overview](#project-overview)
-* [Architecture](#architecture)
-* [Prerequisites](#prerequisites)
-* [Repository Structure](#repository-structure)
-* [Terraform Modules](#terraform-modules)
-* [Setting up Terraform Backend](#setting-up-terraform-backend)
-* [Environment Deployment](#environment-deployment)
-* [GitHub Actions CI/CD](#github-actions-cicd)
-* [Kubernetes Application Deployment](#kubernetes-application-deployment)
-* [Production Considerations](#production-considerations)
-* [Troubleshooting](#troubleshooting)
-* [Interview Notes](#interview-notes)
+- [Project Overview](#project-overview)
+- [Architecture Diagram](#architecture-diagram)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Repository Structure](#repository-structure)
+- [Prerequisites](#prerequisites)
+- [Setup Guide](#setup-guide)
+- [CI/CD Workflow](#cicd-workflow)
+- [Application Deployment](#application-deployment)
+- [Screenshots](#screenshots)
+- [Key Learnings](#key-learnings)
+- [Future Improvements](#future-improvements)
+- [Author](#author)
 
 ---
 
 ## Project Overview
 
-This project provisions:
+This project provisions and demonstrates:
 
-* Azure Resource Group
-* Azure Virtual Network (VNet) and Subnet for AKS
-* Azure Container Registry (ACR) with admin disabled
-* Azure Kubernetes Service (AKS) cluster with system-assigned managed identity
-* GitHub Actions CI/CD for infrastructure provisioning
-* Kubernetes application deployment example (nginx)
-
-Key principles:
-
-* **Modules** for reusable and scalable infrastructure
-* **Remote Terraform state** for team collaboration
-* **OIDC authentication** in GitHub Actions to avoid secrets
-* **Azure AD / RBAC friendly** design
+- Azure Resource Group & Storage Account for remote state
+- Virtual Network (VNet) & Subnet for AKS
+- Azure Container Registry (ACR), admin access disabled
+- AKS Cluster using system-assigned managed identity
+- Modular Terraform for infrastructure as code
+- CI/CD Pipeline using GitHub Actions (OIDC authentication)
+- Sample Nginx application running in AKS
 
 ---
 
-## Architecture
+## Architecture Diagram
+
 
 ```
 +------------------+       +-------------------+
@@ -67,52 +63,56 @@ Key principles:
 * ACR stores container images (no admin credentials)
 * Terraform modules separate network, ACR, AKS for clarity and reuse
 
+
+
 ---
 
-## Prerequisites
+## Features
 
-* Azure account with subscription
-* Azure CLI installed and logged in (`az login`)
-* Terraform >= 1.6.0
-* GitHub account for Actions
-* Bash/Linux shell
+- Fully automated AKS infrastructure provisioning
+- Modular Terraform code for scalability and reuse
+- Secure authentication via OIDC (no secrets exposed)
+- Remote state for safe team-based collaboration
+- Sample application deployed and exposed via LoadBalancer
 
-Optional:
+---
 
-* Azure Cloud Shell
-* kubectl installed locally for testing
+## Tech Stack
+
+- **Azure**: Resource Group, VNet/Subnet, AKS, ACR, Storage Account
+- **Terraform**: Modular infrastructure as code
+- **GitHub Actions**: CI/CD workflow, OIDC authentication
+- **Kubernetes**: Deployment and Service for applications
+- **nginx**: Sample web application
 
 ---
 
 ## Repository Structure
 
-```
-repo-root/
-├── terraform/
-│   ├── backend.tf
-│   ├── providers.tf
-│   ├── versions.tf
-│   ├── modules/
-│   │   ├── network/
-│   │   │   ├── main.tf
-│   │   │   ├── variables.tf
-│   │   │   └── outputs.tf
-│   │   ├── acr/
-│   │   │   ├── main.tf
-│   │   │   ├── variables.tf
-│   │   │   └── outputs.tf
-│   │   └── aks/
-│   │       ├── main.tf
-│   │       ├── variables.tf
-│   │       └── outputs.tf
-│   └── envs/
-│       └── dev/
-│           └── main.tf
-├── k8s/
-│   └── deployment.yaml
-└── .github/workflows/
-    └── terraform.yml
-```
+aks-terraform-azure-devops/ ├── .github/ │ └── workflows/ │ └── terraform.yml ├── app/ │ └── Dockerfile ├── k8s/ │ └── deployment.yaml ├── terraform/ │ ├── backend.tf │ ├── providers.tf │ ├── versions.tf │ ├── modules/ │ │ ├── network/ │ │ │ ├── main.tf │ │ │ ├── variables.tf │ │ │ └── outputs.tf │ │ ├── acr/ │ │ │ ├── main.tf │ │ │ ├── variables.tf │ │ │ └── outputs.tf │ │ └── aks/ │ │ ├── main.tf │ │ ├── variables.tf │ │ └── outputs.tf │ └── envs/ │ └── dev/ │ └── main.tf ├── docs/ │ └── screenshots/ ├── README.md └── .gitignore
+
+---
+
+## Prerequisites
+
+- Azure subscription & CLI (`az login`)
+- Terraform >= 1.6.0
+- GitHub account (Actions enabled)
+- kubectl installed for Kubernetes management
+
+---
+
+## Setup Guide
+
+**1. Clone the Repository**
+
+```bash
+git clone https://github.com/sharedee2776/aks-terraform-azure-devops.git
+cd aks-terraform-azure-devops
+
+---
+
+
 
 ---
 
@@ -200,19 +200,28 @@ Workflow `.github/workflows/terraform.yml`:
 
 ---
 
-## Kubernetes Application Deployment
+Application Deployment
+Sample Nginx App
 
-Example deployment (`k8s/deployment.yaml`):
+bash
+# Deploy application
+kubectl create deployment demo-app --image=nginx:latest
 
-* Deploys nginx with 2 replicas
-* Connects to AKS cluster
-* Can replace `image` with your ACR image
+# Expose app via LoadBalancer
+kubectl expose deployment demo-app --port=80 --type=LoadBalancer
+Access Your Nginx App
 
-Deploy with kubectl:
+Get the External IP:
+bash
+kubectl get service demo-app --watch
+Visit http://<EXTERNAL-IP> in your browser.
+Example (from this project):
 
-```bash
-kubectl apply -f k8s/deployment.yaml
-kubectl get pods
+Code
+EXTERNAL-IP: 9.163.162.100
+Open in your browser: http://9.163.162.100
+
+
 ```
 
 ---
@@ -238,21 +247,33 @@ kubectl get pods
 
 ## Interview Notes
 
-Key points to discuss:
+Key Learnings
+Terraform modules, remote state, resource import & troubleshooting
+Azure provisioning and secure authentication
+Kubernetes deployment & service management
+CI/CD automation with GitHub Actions & OIDC
+Real-world debugging and state management
 
-* Why AKS needs its own subnet (network isolation, private clusters)
-* Why ACR admin is disabled (use managed identity, no static credentials)
-* Why Terraform state is remote (collaboration, locking, safety)
-* Why modules exist (reuse, maintainability, enterprise pattern)
-* Why GitHub Actions uses OIDC (secure auth, no secrets)
-* Explain CI/CD workflow from push → Terraform → AKS → App deployment
+---
+
+## Future Improvements
+
+ Add Helm charts for app deployment
+ Implement CI/CD for container build and deployment to ACR/AKS
+ Private AKS cluster & RBAC with Azure AD
+ Monitoring with Azure Monitor or Prometheus
+ Ingress controllers, TLS, and advanced networking
+ Multi-environment (dev/staging/prod) setup
+ Security scanning for containers
 
 ---
 
 ## Author
 
-Adedamola Dauda – DevOps & Cloud Engineer Portfolio
+Adedamola Dauda
+GitHub
+Junior DevOps & Cloud Engineer Portfolio
 
----
 
-**This project is portfolio-grade and demonstrates a full end-to-end AKS deployment pipeline on Azure with Terraform and GitHub Actions.**
+**This project demonstrates end-to-end, enterprise-grade AKS provisioning and application deployment using the latest industry practices for security, automation, and reliability**.
+
